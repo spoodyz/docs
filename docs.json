@@ -1,6 +1,6 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "dark",
+  "theme": "mint",
   "name": "Klyra Documentation",
   "colors": {
     "primary": "#00cc88",
