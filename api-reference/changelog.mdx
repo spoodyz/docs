@@ -1,0 +1,147 @@
+---
+title: 'Changelog'
+description: 'Latest updates and improvements to the Klyra API'
+---
+
+## Overview
+
+This changelog documents all notable changes to the Klyra API, SDKs, and tools. We follow [Semantic Versioning](https://semver.org/) for our API versions.
+
+<Info>
+  Subscribe to our [Developer Newsletter](https://klyra.io/newsletter) to receive notifications about new releases and upcoming changes.
+</Info>
+
+## 2023-11-15: API Version 2023-11-15
+
+### New Features
+
+- **Bulk Moderation API**: New endpoint to moderate multiple content items in a single request
+- **Image Similarity Checking**: Detect near-duplicate and visually similar images
+- **Video Timestamp Analysis**: Get precise timestamps for flagged content in videos
+- **Language Detection**: Automatic language detection for text moderation
+
+### Improvements
+
+- Improved accuracy for non-English text moderation (+12% precision on average)
+- Enhanced hate speech detection with broader cultural context awareness
+- Reduced false positives for medical and educational content by 35%
+- Faster processing times for large images (50% speedup)
+
+### Developer Experience
+
+- New interactive API explorer in the dashboard
+- Improved error messages with more actionable feedback
+- Added support for CORS preflight caching
+- New SDKs for Ruby and PHP
+
+## 2023-08-22: API Version 2023-08-22
+
+### New Features
+
+- **Audio Moderation API (Beta)**: Detect inappropriate content in audio files
+- **Content Appeals**: API endpoints to manage content moderation appeals
+- **Custom Categories**: Create custom moderation categories for your specific needs
+- **Moderation Explanations**: Get detailed explanations for why content was flagged
+
+### Improvements
+
+- 25% accuracy improvement for image moderation
+- Enhanced detection of subtle policy violations
+- Reduced latency for text moderation (avg. 120ms → 85ms)
+- Added 12 new languages for text moderation
+
+### Developer Experience
+
+- Pagination for webhook logs and audit trails
+- Expanded API documentation with more code examples
+- New TypeScript SDK with full type definitions
+- Interactive CLI with shell autocompletion
+
+### Bug Fixes
+
+- Fixed rare issue with concurrent moderation requests
+- Resolved webhook delivery timeouts for large payloads
+- Fixed character encoding issues for non-Latin scripts
+- Corrected inconsistent rate limit headers
+
+## 2023-05-04: API Version 2023-05-04
+
+### New Features
+
+- **Trustless Mode**: End-to-end encrypted content moderation
+- **Webhooks**: Real-time notifications for moderation events
+- **Dashboard API**: Programmatically access dashboard metrics
+- **Batch Processing**: Asynchronous processing for large files
+
+### Improvements
+
+- Increased maximum file size limits (20MB → 50MB)
+- Enhanced moderation performance for memes and image macros
+- Added support for 8 new languages
+- More granular confidence scores
+
+### Developer Experience
+
+- New Python, Node.js, and Go SDKs
+- Comprehensive API reference documentation
+- Interactive API playground
+- Structured error responses
+
+## 2023-01-18: Initial API Release
+
+### Features
+
+- Core text moderation API
+- Image moderation API
+- Basic authentication and rate limiting
+- CSV and JSON export options
+- Simple dashboard for moderation history
+
+## Upcoming Changes
+
+<Warning>
+  These changes are planned for future releases. Subscribe to our [Developer Newsletter](https://klyra.io/newsletter) for updates on release dates.
+</Warning>
+
+### Planned for December 2023
+
+- **Live Stream Moderation API**: Real-time moderation for livestreams
+- **Custom Moderation Models**: Train models on your specific content
+- **Multi-Region Support**: Choose your data processing location
+- **Java and .NET SDKs**: New client libraries
+
+### Planned for Q1 2024
+
+- **One-click Integrations**: Simplified integration with common platforms
+- **Moderation Workflows**: Create custom moderation pipelines
+- **Mobile SDKs**: iOS and Android client libraries
+- **Advanced Analytics**: Detailed insights on moderation decisions
+
+## Deprecation Schedule
+
+<Warning>
+  The following features are being deprecated. Please migrate to their replacements as soon as possible.
+</Warning>
+
+| Feature | Deprecation Date | End of Support | Replacement |
+|---------|-----------------|----------------|-------------|
+| API v1 Endpoints | 2023-05-04 | 2024-05-04 | API v2 Endpoints |
+| Basic Auth | 2023-08-22 | 2024-08-22 | Bearer Token Auth |
+| Legacy Webhook Format | 2023-11-15 | 2024-11-15 | New Webhook Format |
+| Old Python SDK (v0.x) | 2023-08-22 | 2024-02-22 | Python SDK v1.x |
+
+## Migration Guides
+
+For detailed instructions on migrating between API versions, please refer to our migration guides:
+
+- [Migrating from API v1 to v2](/migrations/v1-to-v2)
+- [Upgrading to the new Webhook format](/migrations/new-webhooks)
+- [Transitioning to Bearer Token Authentication](/migrations/bearer-auth)
+
+## Support
+
+If you have any questions about these changes or need help with migration:
+
+- Contact [support@klyra.io](mailto:support@klyra.io)
+- Join our [Developer Community](https://community.klyra.io)
+- Schedule a [migration consultation](https://klyra.io/consultation) with our team 

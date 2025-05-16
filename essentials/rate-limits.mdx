@@ -1,0 +1,180 @@
+---
+title: 'Rate Limits'
+description: 'Understanding Klyra API rate limits and quotas'
+---
+
+## Overview
+
+Klyra implements rate limiting to ensure fair usage and system stability. Rate limits vary by subscription plan and are applied at both the request level and the account level.
+
+## Rate Limit Types
+
+Klyra enforces several types of rate limits:
+
+1. **Requests per minute (RPM)**: Limits the number of API requests you can make per minute
+2. **Requests per day (RPD)**: Limits the total number of API requests per day
+3. **Concurrent requests**: Limits the number of simultaneous requests your account can make
+4. **Payload size**: Limits the size of content that can be moderated in a single request
+
+## Rate Limit Headers
+
+All API responses include headers that provide information about your current rate limit status:
+
+| Header | Description |
+|--------|-------------|
+| `X-RateLimit-Limit` | The maximum number of requests per minute |
+| `X-RateLimit-Remaining` | The number of requests remaining in the current minute |
+| `X-RateLimit-Reset` | The time in seconds until the rate limit resets |
+| `X-Daily-Limit-Remaining` | The number of requests remaining for the current day |
+
+## Rate Limits by Plan
+
+<Table>
+  <Thead>
+    <Tr>
+      <Th>Plan</Th>
+      <Th>Requests per Minute</Th>
+      <Th>Requests per Day</Th>
+      <Th>Concurrent Requests</Th>
+      <Th>Max Content Size</Th>
+    </Tr>
+  </Thead>
+  <Tbody>
+    <Tr>
+      <Td>Free</Td>
+      <Td>60</Td>
+      <Td>5,000</Td>
+      <Td>5</Td>
+      <Td>
+        Text: 10,000 chars<br/>
+        Image: 5MB<br/>
+        Audio: 5MB<br/>
+        Video: 10MB
+      </Td>
+    </Tr>
+    <Tr>
+      <Td>Startup</Td>
+      <Td>300</Td>
+      <Td>50,000</Td>
+      <Td>20</Td>
+      <Td>
+        Text: 100,000 chars<br/>
+        Image: 20MB<br/>
+        Audio: 50MB<br/>
+        Video: 100MB
+      </Td>
+    </Tr>
+    <Tr>
+      <Td>Business</Td>
+      <Td>1,200</Td>
+      <Td>500,000</Td>
+      <Td>50</Td>
+      <Td>
+        Text: 1,000,000 chars<br/>
+        Image: 50MB<br/>
+        Audio: 200MB<br/>
+        Video: 500MB
+      </Td>
+    </Tr>
+    <Tr>
+      <Td>Enterprise</Td>
+      <Td>Custom</Td>
+      <Td>Custom</Td>
+      <Td>Custom</Td>
+      <Td>Custom</Td>
+    </Tr>
+  </Tbody>
+</Table>
+
+## Handling Rate Limits
+
+When you exceed a rate limit, the API will return a `429 Too Many Requests` status code with a JSON response body containing information about the limit and when it will reset:
+
+```json
+{
+  "error": {
+    "code": "rate_limit_exceeded",
+    "message": "You have exceeded the rate limit of 60 requests per minute",
+    "type": "rate_limit_error",
+    "param": null,
+    "reset_at": 1623180660
+  }
+}
+```
+
+### Best Practices for Rate Limit Management
+
+1. **Implement exponential backoff**: When receiving a 429 response, use exponential backoff to retry the request:
+
+<CodeGroup>
+```js JavaScript
+async function moderateWithBackoff(content, maxRetries = 5) {
+  let retries = 0;
+  
+  while (retries < maxRetries) {
+    try {
+      return await klyra.moderateText({ content });
+    } catch (error) {
+      if (error.error?.code === 'rate_limit_exceeded' && retries < maxRetries) {
+        const resetAt = error.error.reset_at || 0;
+        const currentTime = Math.floor(Date.now() / 1000);
+        const waitTime = resetAt > currentTime 
+          ? (resetAt - currentTime) * 1000 
+          : (2 ** retries) * 1000;
+        
+        console.log(`Rate limited. Retrying in ${waitTime/1000} seconds...`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+        retries++;
+      } else {
+        throw error;
+      }
+    }
+  }
+  
+  throw new Error('Max retries exceeded');
+}
+```
+
+```python Python
+import time
+import random
+
+def moderate_with_backoff(client, content, max_retries=5):
+    retries = 0
+    
+    while retries < max_retries:
+        try:
+            return client.moderate_text(content=content)
+        except Exception as e:
+            if hasattr(e, 'error') and e.error.get('code') == 'rate_limit_exceeded' and retries < max_retries:
+                reset_at = e.error.get('reset_at', 0)
+                current_time = int(time.time())
+                wait_time = (reset_at - current_time) if reset_at > current_time else (2 ** retries)
+                # Add jitter to prevent thundering herd
+                wait_time = wait_time + random.uniform(0, 1)
+                
+                print(f"Rate limited. Retrying in {wait_time} seconds...")
+                time.sleep(wait_time)
+                retries += 1
+            else:
+                raise e
+    
+    raise Exception('Max retries exceeded')
+```
+</CodeGroup>
+
+2. **Use a request queue**: Implement a queue system to throttle your requests and stay within rate limits.
+
+3. **Monitor your usage**: Check the rate limit headers to track your usage and adjust your request patterns accordingly.
+
+4. **Batch requests when possible**: Instead of sending many small requests, batch them together when your use case allows.
+
+## Increasing Your Rate Limits
+
+If you need higher rate limits than what your current plan provides:
+
+1. **Upgrade your plan**: Visit the [pricing page](https://klyra.io/pricing) to find a plan that meets your needs.
+
+2. **Enterprise customization**: For enterprise customers, we offer customized rate limits tailored to your specific requirements. [Contact sales](mailto:sales@klyra.io) to discuss your needs.
+
+3. **Temporary increases**: If you need a temporary rate limit increase for a specific event or campaign, [contact support](mailto:support@klyra.io) at least 5 business days in advance. 

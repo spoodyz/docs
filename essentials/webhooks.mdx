@@ -1,0 +1,313 @@
+---
+title: 'Webhooks'
+description: 'Set up and manage webhooks for real-time moderation events'
+---
+
+## Overview
+
+Klyra webhooks allow your application to receive real-time notifications when moderation events occur. This enables you to build reactive systems that can immediately respond to moderation decisions without constantly polling the API.
+
+## Use Cases
+
+- Receive notification when a batch moderation job completes
+- Get alerted immediately when high-severity content is detected
+- Trigger automated workflows based on moderation results
+- Synchronize moderation decisions across multiple systems
+- Log moderation activities for compliance purposes
+
+## Setting Up Webhooks
+
+### Step 1: Create a webhook endpoint
+
+First, create an endpoint on your server that can receive POST requests from Klyra:
+
+<CodeGroup>
+```js Node.js (Express)
+const express = require('express');
+const crypto = require('crypto');
+const app = express();
+
+// Parse JSON bodies
+app.use(express.json());
+
+// Your webhook endpoint
+app.post('/webhooks/klyra', (req, res) => {
+  // Verify the webhook signature (see security section)
+  const signature = req.headers['x-klyra-signature'];
+  const isValid = verifySignature(req.body, signature, 'YOUR_WEBHOOK_SECRET');
+  
+  if (!isValid) {
+    return res.status(401).send('Invalid signature');
+  }
+  
+  // Process the webhook event
+  const event = req.body;
+  
+  console.log('Received webhook:', event.type);
+  
+  // Handle different event types
+  switch(event.type) {
+    case 'moderation.completed':
+      handleModerationCompleted(event.data);
+      break;
+    case 'moderation.flagged':
+      handleContentFlagged(event.data);
+      break;
+    // Handle other event types
+  }
+  
+  // Acknowledge receipt of the webhook
+  res.status(200).send('Webhook received');
+});
+
+function verifySignature(payload, signature, secret) {
+  const hmac = crypto.createHmac('sha256', secret);
+  const expectedSignature = hmac.update(JSON.stringify(payload)).digest('hex');
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expectedSignature)
+  );
+}
+
+app.listen(3000, () => {
+  console.log('Webhook server running on port 3000');
+});
+```
+
+```python Python (Flask)
+from flask import Flask, request, jsonify
+import hmac
+import hashlib
+import json
+
+app = Flask(__name__)
+
+@app.route('/webhooks/klyra', methods=['POST'])
+def klyra_webhook():
+    # Verify the webhook signature
+    signature = request.headers.get('X-Klyra-Signature')
+    is_valid = verify_signature(request.data, signature, 'YOUR_WEBHOOK_SECRET')
+    
+    if not is_valid:
+        return jsonify({'error': 'Invalid signature'}), 401
+    
+    # Process the webhook event
+    event = request.json
+    
+    print(f"Received webhook: {event['type']}")
+    
+    # Handle different event types
+    if event['type'] == 'moderation.completed':
+        handle_moderation_completed(event['data'])
+    elif event['type'] == 'moderation.flagged':
+        handle_content_flagged(event['data'])
+    # Handle other event types
+    
+    # Acknowledge receipt of the webhook
+    return jsonify({'status': 'success'}), 200
+
+def verify_signature(payload, signature, secret):
+    expected_signature = hmac.new(
+        secret.encode(),
+        payload,
+        hashlib.sha256
+    ).hexdigest()
+    return hmac.compare_digest(signature, expected_signature)
+
+if __name__ == '__main__':
+    app.run(port=3000)
+```
+</CodeGroup>
+
+### Step 2: Register the webhook in Klyra Dashboard
+
+1. Log in to the [Klyra Dashboard](https://dashboard.klyra.io)
+2. Navigate to **Project Settings** > **Webhooks**
+3. Click **Add Webhook Endpoint**
+4. Enter the following details:
+   - **Endpoint URL**: The URL of your webhook endpoint (e.g., `https://your-app.com/webhooks/klyra`)
+   - **Events to send**: Select which events to receive
+   - **Description**: A friendly name for this webhook
+5. Click **Generate Secret** to create a signing secret
+6. Copy the generated secret and store it securely
+7. Click **Create Webhook**
+
+## Webhook Events
+
+Klyra sends the following webhook events:
+
+| Event Type | Description |
+|------------|-------------|
+| `moderation.completed` | A moderation request has been completed |
+| `moderation.flagged` | Content has been flagged as potentially violating |
+| `moderation.batch.completed` | A batch moderation job has finished |
+| `moderation.appeal.received` | A moderation decision appeal has been submitted |
+| `moderation.appeal.resolved` | A moderation appeal has been resolved |
+
+## Webhook Payload
+
+All webhook payloads follow this format:
+
+```json
+{
+  "id": "whk_1a2b3c4d5e6f",
+  "type": "moderation.completed",
+  "created": 1623180660,
+  "data": {
+    // Event-specific data
+  }
+}
+```
+
+### Example Payloads
+
+<Tabs>
+  <Tab title="moderation.completed">
+    ```json
+    {
+      "id": "whk_1a2b3c4d5e6f",
+      "type": "moderation.completed",
+      "created": 1623180660,
+      "data": {
+        "moderation_id": "mod_9z8y7x6w5v4u",
+        "status": "success",
+        "results": {
+          "flagged": false,
+          "categories": {
+            "toxic": {
+              "score": 0.01,
+              "flagged": false
+            },
+            "spam": {
+              "score": 0.02,
+              "flagged": false
+            }
+          }
+        },
+        "metadata": {
+          "processing_time_ms": 132
+        }
+      }
+    }
+    ```
+  </Tab>
+  <Tab title="moderation.flagged">
+    ```json
+    {
+      "id": "whk_2b3c4d5e6f7g",
+      "type": "moderation.flagged",
+      "created": 1623180690,
+      "data": {
+        "moderation_id": "mod_8x7w6v5u4t3s",
+        "status": "success",
+        "results": {
+          "flagged": true,
+          "categories": {
+            "toxic": {
+              "score": 0.89,
+              "flagged": true
+            },
+            "harassment": {
+              "score": 0.74,
+              "flagged": true
+            }
+          }
+        },
+        "content_preview": "This is a preview of the flagged content...",
+        "severity": "high",
+        "metadata": {
+          "processing_time_ms": 145
+        }
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Security
+
+### Verifying Signatures
+
+To ensure webhooks are coming from Klyra and haven't been tampered with, all webhook requests include a signature in the `X-Klyra-Signature` header. 
+
+The signature is an HMAC SHA-256 hash created using your webhook secret and the request body:
+
+<CodeGroup>
+```js JavaScript
+const crypto = require('crypto');
+
+function verifyWebhookSignature(payload, signature, secret) {
+  const hmac = crypto.createHmac('sha256', secret);
+  const expectedSignature = hmac.update(JSON.stringify(payload)).digest('hex');
+  
+  // Use a constant-time comparison to prevent timing attacks
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expectedSignature)
+  );
+}
+```
+
+```python Python
+import hmac
+import hashlib
+import json
+
+def verify_webhook_signature(payload, signature, secret):
+    expected_signature = hmac.new(
+        secret.encode(),
+        json.dumps(payload).encode(),
+        hashlib.sha256
+    ).hexdigest()
+    
+    // Use a constant-time comparison to prevent timing attacks
+    return hmac.compare_digest(signature, expected_signature)
+```
+</CodeGroup>
+
+### Best Practices
+
+- **Store your webhook secret securely**: Never expose your webhook secret in client-side code
+- **Always verify signatures**: Reject requests with invalid signatures
+- **Implement idempotency**: Webhook events may occasionally be delivered more than once
+- **Return 2xx responses quickly**: Acknowledge webhook receipt promptly (within 10 seconds)
+- **Process webhooks asynchronously**: Handle time-consuming tasks in background jobs
+
+## Retries and Failures
+
+If your endpoint returns a non-2xx response or takes too long to respond, Klyra will retry the webhook with exponential backoff:
+
+- 1st retry: 5 minutes after initial failure
+- 2nd retry: 15 minutes after 1st retry
+- 3rd retry: 60 minutes after 2nd retry
+- 4th retry: 180 minutes after 3rd retry
+- 5th retry: 360 minutes after 4th retry
+
+After 5 failed attempts, the webhook delivery will be marked as failed and will not be retried again.
+
+## Webhook Logs
+
+You can view webhook delivery history in the Klyra Dashboard:
+
+1. Go to **Project Settings** > **Webhooks**
+2. Select a webhook endpoint
+3. View the **Delivery History** tab
+
+For each delivery attempt, you can see:
+- Timestamp
+- HTTP status code
+- Response time
+- Request/response bodies
+- Error details (if any)
+
+## Testing Webhooks
+
+You can send test webhook events from the Klyra Dashboard:
+
+1. Go to **Project Settings** > **Webhooks**
+2. Select a webhook endpoint
+3. Click **Send Test Event**
+4. Choose an event type and customize the payload if needed
+5. Click **Send Test Event**
+
+For local development, we recommend using a service like [ngrok](https://ngrok.com/) to expose your local server to the internet. 

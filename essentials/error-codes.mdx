@@ -1,0 +1,140 @@
+---
+title: 'Error Codes'
+description: 'Understanding Klyra API error codes and how to resolve them'
+---
+
+## Error Response Format
+
+When the Klyra API encounters an error, it returns a JSON response with an error object containing the following properties:
+
+```json
+{
+  "error": {
+    "code": "invalid_api_key",
+    "message": "The API key provided is invalid or has been revoked.",
+    "type": "authentication_error",
+    "param": null,
+    "request_id": "req_1a2b3c4d5e6f"
+  }
+}
+```
+
+- **code**: A machine-readable identifier for the error
+- **message**: A human-readable explanation of what went wrong
+- **type**: The category of error
+- **param**: When applicable, the specific parameter that caused the error
+- **request_id**: A unique identifier for the request, useful when contacting support
+
+## Authentication Errors
+
+| Code | Description | Resolution |
+|------|-------------|------------|
+| `invalid_api_key` | API key is invalid or has been revoked | Check your API key or generate a new one in the dashboard |
+| `missing_api_key` | No API key was provided | Add the Authorization header with your API key |
+| `expired_api_key` | The API key has expired | Generate a new API key in the dashboard |
+| `insufficient_permissions` | The API key doesn't have permission for this action | Use a different API key with the required permissions |
+
+## Request Errors
+
+| Code | Description | Resolution |
+|------|-------------|------------|
+| `invalid_request` | The request was malformed or missing required fields | Check your request parameters against the API documentation |
+| `unsupported_content_type` | The content type provided is not supported | Verify you're sending a supported content type |
+| `content_too_large` | The content exceeds size limits | Reduce the size of your content or use chunking for large files |
+| `invalid_parameters` | One or more parameters are invalid | Check the `param` field for which parameter is problematic |
+| `missing_content` | No content was provided for moderation | Ensure the content field in your request is not empty |
+| `invalid_url` | The URL provided could not be accessed | Verify the URL is correct and publicly accessible |
+
+## Rate Limit Errors
+
+| Code | Description | Resolution |
+|------|-------------|------------|
+| `rate_limit_exceeded` | You've exceeded your rate limit | Wait before retrying or upgrade your plan for higher limits |
+| `quota_exceeded` | You've exceeded your monthly quota | Upgrade your plan or wait until the next billing cycle |
+| `concurrent_requests_exceeded` | Too many concurrent requests | Implement backoff and limit parallel requests |
+
+## Server Errors
+
+| Code | Description | Resolution |
+|------|-------------|------------|
+| `internal_server_error` | Something went wrong on our end | Contact support with the request_id if this persists |
+| `service_unavailable` | The service is temporarily unavailable | Retry the request after a brief delay |
+| `model_unavailable` | The requested model is temporarily unavailable | Try a different model or retry later |
+| `timeout` | The request took too long to process | Simplify your request or break it into smaller chunks |
+
+## Content-Specific Errors
+
+| Code | Description | Resolution |
+|------|-------------|------------|
+| `unprocessable_content` | The content couldn't be processed | Check that your content is valid and in a supported format |
+| `content_download_failed` | Failed to download content from the provided URL | Verify the URL is publicly accessible and the content exists |
+| `unsupported_language` | The language of the content is not supported | Check the list of supported languages |
+| `corrupted_media` | The media file is corrupted or in an invalid format | Verify the file integrity and format |
+
+## Handling Errors
+
+Here's an example of how to handle errors in your code:
+
+<CodeGroup>
+```js JavaScript
+try {
+  const result = await klyra.moderateText({
+    content: "Test content"
+  });
+  // Process successful response
+} catch (error) {
+  if (error.error) {
+    const { code, message, request_id } = error.error;
+    
+    switch (code) {
+      case 'invalid_api_key':
+        console.error('Authentication error:', message);
+        // Prompt user to update API key
+        break;
+      case 'rate_limit_exceeded':
+        console.error('Rate limit error:', message);
+        // Implement exponential backoff and retry
+        break;
+      default:
+        console.error(`Error (${code}):`, message);
+        console.error('Request ID for support:', request_id);
+    }
+  } else {
+    console.error('Network or unknown error:', error);
+  }
+}
+```
+
+```python Python
+try:
+    result = client.moderate_text(content="Test content")
+    # Process successful response
+except Exception as e:
+    if hasattr(e, 'error'):
+        code = e.error.get('code')
+        message = e.error.get('message')
+        request_id = e.error.get('request_id')
+        
+        if code == 'invalid_api_key':
+            print(f"Authentication error: {message}")
+            # Prompt user to update API key
+        elif code == 'rate_limit_exceeded':
+            print(f"Rate limit error: {message}")
+            # Implement exponential backoff and retry
+        else:
+            print(f"Error ({code}): {message}")
+            print(f"Request ID for support: {request_id}")
+    else:
+        print(f"Network or unknown error: {str(e)}")
+```
+</CodeGroup>
+
+## Best Practices
+
+1. **Always implement error handling** in your integration with the Klyra API
+2. **Use exponential backoff** when encountering rate limiting errors
+3. **Log the request_id** for troubleshooting and support
+4. **Validate content** before sending it to the API
+5. **Handle authentication errors** by prompting for a new API key
+
+If you encounter persistent errors, [contact our support team](mailto:support@klyra.io) with the request_id and details about your implementation. 

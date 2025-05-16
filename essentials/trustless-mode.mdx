@@ -1,0 +1,165 @@
+---
+title: 'Trustless Mode (E2EE)'
+description: 'End-to-end encrypted content moderation with zero knowledge'
+---
+
+## Introduction to Trustless Mode
+
+Klyra's Trustless Mode provides end-to-end encrypted (E2EE) content moderation, allowing you to moderate sensitive content without ever exposing the plaintext to Klyra's servers. This zero-knowledge approach ensures maximum privacy and security for applications where data confidentiality is critical.
+
+<Info>
+  Trustless Mode is available on Business and Enterprise plans. [Contact us](mailto:sales@klyra.io) to enable this feature.
+</Info>
+
+## How Trustless Mode Works
+
+<Steps>
+  <Step title="Client-side encryption">
+    Your application encrypts the content using a locally generated encryption key before sending it to Klyra.
+  </Step>
+  <Step title="Encrypted processing">
+    Klyra processes the encrypted content using secure multi-party computation (MPC) and homomorphic encryption techniques.
+  </Step>
+  <Step title="Encrypted results">
+    Moderation results are encrypted and sent back to your application.
+  </Step>
+  <Step title="Client-side decryption">
+    Your application decrypts the results using the original encryption key.
+  </Step>
+</Steps>
+
+<Frame>
+  <img src="/images/trustless-mode-diagram.png" alt="Trustless Mode Architecture" />
+</Frame>
+
+## Technical Implementation
+
+### Step 1: Generate an encryption key
+
+<CodeGroup>
+```js JavaScript
+import { KlyraClient } from '@klyra/sdk';
+import { generateTrustlessKey } from '@klyra/crypto';
+
+// Generate a secure encryption key
+const encryptionKey = await generateTrustlessKey();
+
+// Store this key securely - it never leaves your application
+console.log('Encryption Key:', encryptionKey);
+```
+
+```python Python
+from klyra import KlyraClient
+from klyra.crypto import generate_trustless_key
+
+# Generate a secure encryption key
+encryption_key = generate_trustless_key()
+
+# Store this key securely - it never leaves your application
+print(f"Encryption Key: {encryption_key}")
+```
+</CodeGroup>
+
+### Step 2: Initialize the client with Trustless Mode
+
+<CodeGroup>
+```js JavaScript
+// Initialize Klyra client with trustless mode enabled
+const klyra = new KlyraClient({
+  apiKey: 'YOUR_API_KEY',
+  trustless: {
+    enabled: true,
+    encryptionKey: encryptionKey
+  }
+});
+```
+
+```python Python
+# Initialize Klyra client with trustless mode enabled
+client = KlyraClient(
+    api_key="YOUR_API_KEY",
+    trustless={
+        "enabled": True,
+        "encryption_key": encryption_key
+    }
+)
+```
+</CodeGroup>
+
+### Step 3: Use the API as normal
+
+The SDK handles all encryption and decryption automatically. Use the API as you normally would:
+
+<CodeGroup>
+```js JavaScript
+// The content will be encrypted automatically before sending
+const result = await klyra.moderateText({
+  content: "This is sensitive content that will be encrypted",
+  settings: {
+    categories: ["toxic", "harassment"]
+  }
+});
+
+console.log(result);
+```
+
+```python Python
+# The content will be encrypted automatically before sending
+result = client.moderate_text(
+    content="This is sensitive content that will be encrypted",
+    settings={
+        "categories": ["toxic", "harassment"]
+    }
+)
+
+print(result)
+```
+</CodeGroup>
+
+## Technical Details
+
+### Encryption Specification
+
+- **Encryption algorithm**: AES-256-GCM with HKDF key derivation
+- **Key generation**: Client-side CSPRNG with 256-bit entropy
+- **Secure computation**: Homomorphic encryption for specific moderation tasks
+- **Zero knowledge proofs**: Used to validate results without revealing content
+
+### Security Guarantees
+
+- Content is encrypted before leaving your application
+- Encryption keys never leave your system
+- Klyra's servers never see plaintext content
+- Moderation results are verifiable without decryption
+- Full forward secrecy with per-request nonces
+
+## Limitations
+
+While Trustless Mode provides maximum privacy, there are some limitations:
+
+1. **Model accuracy**: Some moderation tasks may have slightly reduced accuracy compared to non-encrypted processing
+2. **Performance**: Processing encrypted content takes approximately 1.5-2x longer
+3. **Content types**: Currently available for text and image moderation only
+4. **Language support**: Full support for English, with partial support for other languages
+
+## Verification and Audit
+
+Klyra's Trustless Mode implementation has been independently audited by security firms:
+
+- [TrustGuard Audit Report](https://klyra.io/audits/trustguard-2023.pdf)
+- [SecureCrypt Review](https://klyra.io/audits/securecrypt-2023.pdf)
+
+The client-side encryption libraries are open source and available for inspection:
+- [GitHub: @klyra/crypto](https://github.com/klyra/crypto)
+
+## Enterprise Options
+
+Enterprise customers can benefit from additional Trustless Mode features:
+
+- Hardware Security Module (HSM) integration
+- Bring Your Own Key (BYOK) support
+- On-premise deployment options
+- Custom encryption schemes
+- Additional auditing and logging capabilities
+
+Contact our [enterprise team](mailto:enterprise@klyra.io) to learn more about these options. 

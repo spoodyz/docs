@@ -1,50 +1,57 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Mint Starter Kit",
+  "theme": "dark",
+  "name": "Klyra Documentation",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#00cc88",
+    "light": "#00cc88",
+    "dark": "#00cc88"
   },
   "favicon": "/favicon.svg",
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Documentation",
         "groups": [
           {
-            "group": "Get Started",
+            "group": "Getting Started",
             "pages": [
               "index",
               "quickstart",
-              "development"
+              "essentials/authentication"
             ]
           },
           {
-            "group": "Essentials",
+            "group": "Core Concepts",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/settings",
-              "essentials/navigation",
-              "essentials/reusable-snippets"
+              "essentials/moderation-models",
+              "essentials/error-codes",
+              "essentials/rate-limits"
+            ]
+          },
+          {
+            "group": "Advanced",
+            "pages": [
+              "essentials/trustless-mode",
+              "essentials/webhooks",
+              "essentials/audit-logs"
             ]
           }
         ]
       },
       {
-        "tab": "API Reference",
+        "tab": "Reference",
         "groups": [
           {
             "group": "API Documentation",
             "pages": [
-              "api-reference/introduction"
+              "api-reference/sdks",
+              "api-reference/cli",
+              "api-reference/changelog"
             ]
           },
           {
-            "group": "Endpoint Examples",
+            "group": "Endpoints",
             "pages": [
               "api-reference/endpoint/get",
               "api-reference/endpoint/create",
@@ -59,17 +66,17 @@
       "anchors": [
         {
           "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
+          "href": "https://klyra.io/docs",
           "icon": "book-open-cover"
         },
         {
           "anchor": "Community",
-          "href": "https://mintlify.com/community",
+          "href": "https://klyra.io/community",
           "icon": "slack"
         },
         {
           "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
+          "href": "https://klyra.io/blog",
           "icon": "newspaper"
         }
       ]
@@ -83,20 +90,20 @@
     "links": [
       {
         "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "href": "mailto:support@klyra.io"
       }
     ],
     "primary": {
       "type": "button",
       "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+      "href": "https://dashboard.klyra.io"
     }
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "x": "https://x.com/klyraAPI",
+      "github": "https://github.com/klyra",
+      "linkedin": "https://linkedin.com/company/klyra"
     }
   }
 }

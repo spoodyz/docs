@@ -1,0 +1,90 @@
+---
+title: 'Authentication'
+description: 'Secure your Klyra API requests with authentication'
+---
+
+## API Key Authentication
+
+All requests to the Klyra API require authentication using your API key. Your API key carries many privileges, so be sure to keep it secure. Don't share your API key in publicly accessible areas such as GitHub, client-side code, or in your frontend applications.
+
+### Obtaining API Keys
+
+You can generate API keys from the [Klyra Dashboard](https://dashboard.klyra.io). Each project can have multiple API keys with different permissions.
+
+1. Log in to your Klyra Dashboard
+2. Navigate to the Projects section
+3. Select your project or create a new one
+4. Go to API Keys in the project settings
+5. Click "Generate New Key"
+
+<Note>
+  We recommend creating separate API keys for development and production environments. This makes key rotation and revocation easier in case of a security incident.
+</Note>
+
+### Using API Keys
+
+Authentication to the API is performed via HTTP Bearer Authentication. Provide your API key as the bearer token value in the `Authorization` header.
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST "https://api.klyra.io/v1/moderate/text" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "content": "Test content for moderation"
+  }'
+```
+
+```js JavaScript
+import { KlyraClient } from '@klyra/sdk';
+
+// Initialize with API key
+const klyra = new KlyraClient('YOUR_API_KEY');
+
+// The SDK handles authentication automatically
+const result = await klyra.moderateText({
+  content: "Test content for moderation"
+});
+```
+
+```python Python
+from klyra import KlyraClient
+
+# Initialize with API key
+client = KlyraClient("YOUR_API_KEY")
+
+# The SDK handles authentication automatically
+result = client.moderate_text(
+    content="Test content for moderation"
+)
+```
+
+</CodeGroup>
+
+## Key Management
+
+### API Key Best Practices
+
+- **Never hardcode API keys** in your application source code
+- Use environment variables or secure vaults to store keys
+- Rotate keys periodically (we recommend every 90 days)
+- Use separate keys for different environments and services
+- Implement proper access controls for who can view and manage keys
+
+### Revoking API Keys
+
+If an API key is compromised, you should immediately revoke it from the Klyra Dashboard:
+
+1. Log in to your Klyra Dashboard
+2. Navigate to your project settings
+3. Find the compromised key and click "Revoke"
+4. Generate a new key to replace the revoked one
+
+<Warning>
+  Revoking a key immediately stops it from working. Ensure you've updated your application with a new key before revoking an active one to prevent service disruption.
+</Warning>
+
+## Organization Access Keys
+
+For enterprise customers, Klyra offers Organization Access Keys that provide more granular permissions and can be restricted to specific actions or resources. Contact our [support team](mailto:support@klyra.io) to learn more about organization-level access controls. 

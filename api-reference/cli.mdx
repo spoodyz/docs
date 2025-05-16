@@ -1,0 +1,298 @@
+---
+title: 'Command Line Interface (CLI)'
+description: 'Use Klyra from your terminal'
+---
+
+## Overview
+
+The Klyra CLI provides a convenient way to interact with the Klyra API directly from your terminal. It's useful for testing, scripting, batch processing, and CI/CD pipelines.
+
+## Installation
+
+<CodeGroup>
+```bash npm
+npm install -g @klyra/cli
+```
+
+```bash Homebrew
+brew install klyra/tap/klyra
+```
+
+```bash Direct Download
+# Linux/macOS
+curl -fsSL https://cli.klyra.io/install.sh | sh
+
+# Windows PowerShell
+iwr https://cli.klyra.io/install.ps1 -useb | iex
+```
+
+```bash Docker
+docker run -it --rm klyra/cli:latest
+```
+</CodeGroup>
+
+Verify installation:
+```bash
+klyra --version
+```
+
+## Authentication
+
+Authenticate with your API key using one of these methods:
+
+```bash
+# Login interactively
+klyra login
+
+# Set API key directly
+klyra config set api_key YOUR_API_KEY
+
+# Use environment variable
+export KLYRA_API_KEY=YOUR_API_KEY
+```
+
+## Basic Commands
+
+### Moderate Text Content
+
+```bash
+# Moderate text from a string
+klyra moderate text "This is a text to moderate"
+
+# Moderate text from a file
+klyra moderate text --file ./content.txt
+
+# Specify categories to check
+klyra moderate text --file ./content.txt --categories toxic,harassment,spam
+
+# Set custom threshold
+klyra moderate text --file ./content.txt --threshold 0.8
+```
+
+### Moderate Image Content
+
+```bash
+# Moderate an image from a file
+klyra moderate image --file ./image.jpg
+
+# Moderate an image from a URL
+klyra moderate image --url https://example.com/image.jpg
+
+# Get detailed analysis with region detection
+klyra moderate image --file ./image.jpg --detailed
+```
+
+### Moderate Audio/Video Content
+
+```bash
+# Moderate audio
+klyra moderate audio --file ./audio.mp3
+
+# Moderate video
+klyra moderate video --file ./video.mp4 --frame-rate 1
+```
+
+### Batch Processing
+
+```bash
+# Moderate multiple files
+klyra moderate batch --glob "./content/*.txt" --output results.json
+
+# Process a directory of images
+klyra moderate batch --dir ./images --type image --output results.csv
+
+# Process with custom settings
+klyra moderate batch --glob "./content/*.txt" --settings settings.json
+```
+
+## Output Formats
+
+Control the output format:
+
+```bash
+# JSON output (default)
+klyra moderate text "Hello world" --format json
+
+# Compact JSON (single line)
+klyra moderate text "Hello world" --format json-compact
+
+# CSV output
+klyra moderate text "Hello world" --format csv
+
+# Pretty table output
+klyra moderate text "Hello world" --format table
+
+# Colored output for human-readable results
+klyra moderate text "Hello world" --format pretty
+```
+
+## Configuration
+
+View and edit your CLI configuration:
+
+```bash
+# View current configuration
+klyra config list
+
+# Set a configuration value
+klyra config set <key> <value>
+
+# Get a configuration value
+klyra config get <key>
+
+# Reset to default configuration
+klyra config reset
+```
+
+Available configuration options:
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `api_key` | Your Klyra API key | - |
+| `api_url` | API base URL | https://api.klyra.io/v1 |
+| `output_format` | Default output format | json |
+| `timeout` | Request timeout in seconds | 60 |
+| `max_retries` | Maximum retry attempts | 3 |
+| `color` | Enable/disable colored output | true |
+
+## Advanced Usage
+
+### Using Settings Files
+
+Create a JSON settings file for reusable configurations:
+
+```json
+{
+  "categories": ["toxic", "harassment", "spam"],
+  "threshold": 0.7,
+  "language": "en",
+  "detailed": true
+}
+```
+
+Use the settings file:
+
+```bash
+klyra moderate text --file ./content.txt --settings ./settings.json
+```
+
+### CI/CD Integration
+
+Use the CLI in your CI/CD pipelines:
+
+```bash
+# Example GitHub Actions workflow
+klyra moderate batch --glob "./content/**/*.txt" --format json --output results.json --exit-code
+
+# Exit with error if any content is flagged
+if [ $? -eq 1 ]; then
+  echo "Moderation failed - inappropriate content detected"
+  exit 1
+fi
+```
+
+### Webhooks
+
+Manage webhooks from the CLI:
+
+```bash
+# List all webhooks
+klyra webhooks list
+
+# Create a new webhook
+klyra webhooks create --url https://example.com/webhook --events moderation.completed,moderation.flagged
+
+# Delete a webhook
+klyra webhooks delete <webhook_id>
+```
+
+### Custom Headers
+
+Add custom headers to requests:
+
+```bash
+klyra moderate text "Hello" --header "Custom-Header: value" --header "Another-Header: value"
+```
+
+## Plugins
+
+Extend the CLI with plugins:
+
+```bash
+# Install a plugin
+klyra plugins install @klyra/cli-plugin-jira
+
+# Use plugin functionality
+klyra jira create-issue --moderation-id mod_123456
+
+# List installed plugins
+klyra plugins list
+
+# Remove a plugin
+klyra plugins uninstall @klyra/cli-plugin-jira
+```
+
+## Trustless Mode
+
+Use end-to-end encryption with trustless mode:
+
+```bash
+# Generate an encryption key
+klyra trustless generate-key --output key.txt
+
+# Use trustless mode with a specified key
+klyra moderate text "Sensitive content" --trustless --key-file ./key.txt
+
+# Use trustless mode with an environment variable
+export KLYRA_TRUSTLESS_KEY=$(cat key.txt)
+klyra moderate text "Sensitive content" --trustless
+```
+
+## Examples
+
+### Content Moderation Pipeline
+
+```bash
+#!/bin/bash
+# Process user uploads and flag inappropriate content
+
+# Set up error handling
+set -e
+
+# Process all new uploads
+klyra moderate batch \
+  --glob "./uploads/*.{jpg,png,gif}" \
+  --type image \
+  --categories adult,violence,hate_symbols \
+  --threshold 0.7 \
+  --output results.json \
+  --format json
+
+# Extract flagged content
+cat results.json | jq '.[] | select(.flagged == true) | .file' > flagged_files.txt
+
+# Take action on flagged content
+if [ -s flagged_files.txt ]; then
+  echo "Inappropriate content detected, sending notification..."
+  # Send notification or trigger moderation workflow
+fi
+```
+
+### Interactive Mode
+
+The CLI also offers an interactive mode:
+
+```bash
+klyra interactive
+```
+
+This opens an interactive session where you can enter commands and see results immediately, perfect for exploration and testing.
+
+## Support
+
+For more information and support:
+
+- Run `klyra --help` or `klyra <command> --help` for command-specific help
+- Visit the [CLI documentation](https://klyra.io/docs/cli) for detailed guides
+- Report issues on [GitHub](https://github.com/klyra/cli)
+- Contact [support@klyra.io](mailto:support@klyra.io) for assistance 

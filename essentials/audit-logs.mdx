@@ -1,0 +1,249 @@
+---
+title: 'Audit Logs'
+description: 'Comprehensive visibility into moderation activities and decisions'
+---
+
+## Overview
+
+Klyra's Audit Logs provide a complete, immutable record of all moderation activities in your account. These logs help you track moderation decisions, investigate incidents, and maintain compliance with regulatory requirements.
+
+<Info>
+  Audit Logs are available on all paid plans. The retention period varies by plan: Startup (30 days), Business (90 days), Enterprise (1+ year).
+</Info>
+
+## Accessing Audit Logs
+
+### Via Dashboard
+
+You can access Audit Logs directly in the Klyra Dashboard:
+
+1. Log in to the [Klyra Dashboard](https://dashboard.klyra.io)
+2. Navigate to **Project Settings** > **Audit Logs**
+3. Use the filters to narrow down the logs by date, event type, user, etc.
+4. Click on any log entry to view its details
+
+### Via API
+
+You can also access Audit Logs programmatically through our API:
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://api.klyra.io/v1/audit-logs" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "start_time": "2023-06-01T00:00:00Z",
+    "end_time": "2023-06-30T23:59:59Z",
+    "event_types": ["moderation.created", "moderation.updated"],
+    "limit": 100
+  }'
+```
+
+```js JavaScript
+import { KlyraClient } from '@klyra/sdk';
+
+const klyra = new KlyraClient('YOUR_API_KEY');
+
+async function fetchAuditLogs() {
+  const logs = await klyra.auditLogs.list({
+    startTime: '2023-06-01T00:00:00Z',
+    endTime: '2023-06-30T23:59:59Z',
+    eventTypes: ['moderation.created', 'moderation.updated'],
+    limit: 100
+  });
+  
+  console.log(`Found ${logs.data.length} audit logs`);
+  console.log(logs.data);
+}
+
+fetchAuditLogs();
+```
+
+```python Python
+from klyra import KlyraClient
+from datetime import datetime, timezone
+
+client = KlyraClient("YOUR_API_KEY")
+
+logs = client.audit_logs.list(
+    start_time="2023-06-01T00:00:00Z",
+    end_time="2023-06-30T23:59:59Z",
+    event_types=["moderation.created", "moderation.updated"],
+    limit=100
+)
+
+print(f"Found {len(logs.data)} audit logs")
+print(logs.data)
+```
+</CodeGroup>
+
+## Log Types
+
+Klyra logs the following types of events:
+
+### Moderation Events
+
+| Event | Description |
+|-------|-------------|
+| `moderation.created` | A new moderation request was submitted |
+| `moderation.completed` | A moderation request completed processing |
+| `moderation.flagged` | Content was flagged as potentially violating |
+| `moderation.appealed` | A moderation decision was appealed |
+| `moderation.overridden` | A moderation decision was manually overridden |
+
+### Administrative Events
+
+| Event | Description |
+|-------|-------------|
+| `api_key.created` | A new API key was created |
+| `api_key.revoked` | An API key was revoked |
+| `webhook.created` | A new webhook endpoint was configured |
+| `webhook.updated` | A webhook endpoint was updated |
+| `webhook.deleted` | A webhook endpoint was deleted |
+| `user.invited` | A new user was invited to the organization |
+| `user.added` | A new user joined the organization |
+| `user.removed` | A user was removed from the organization |
+| `role.assigned` | A user was assigned a role |
+| `settings.updated` | Account or project settings were updated |
+
+## Log Data Structure
+
+Each audit log entry contains the following fields:
+
+```json
+{
+  "id": "log_1a2b3c4d5e6f",
+  "timestamp": "2023-06-15T14:30:45Z",
+  "event_type": "moderation.created",
+  "actor": {
+    "type": "api_key",
+    "id": "key_9z8y7x6w5v4u",
+    "name": "Production API Key"
+  },
+  "resource": {
+    "type": "moderation",
+    "id": "mod_5t4r3q2p1o0n",
+    "name": null
+  },
+  "action": "create",
+  "status": "success",
+  "metadata": {
+    "client_ip": "198.51.100.123",
+    "user_agent": "klyra-sdk/1.0.0 node/16.15.0",
+    "content_type": "text",
+    "content_hash": "a1b2c3d4e5f6",
+    "categories": ["toxic", "harassment"]
+  }
+}
+```
+
+- **id**: Unique identifier for the audit log entry
+- **timestamp**: When the event occurred (in ISO 8601 format)
+- **event_type**: The type of event (from the tables above)
+- **actor**: Who or what performed the action
+- **resource**: The object that was acted upon
+- **action**: The action that was performed (create, read, update, delete)
+- **status**: Whether the action succeeded or failed
+- **metadata**: Additional context about the event
+
+## Filtering Logs
+
+You can filter logs by various criteria in both the Dashboard and API:
+
+- **Time range**: Filter logs by start and end time
+- **Event types**: Filter by specific event types
+- **Actors**: Filter by specific users or API keys
+- **Resources**: Filter by specific resources (e.g., moderation IDs)
+- **Status**: Filter by success or failure status
+- **Client IP**: Filter by the IP address that initiated the request
+
+## Log Exports
+
+You can export audit logs for offline analysis or long-term storage:
+
+### Dashboard Export
+
+1. Apply filters to narrow down the logs you want to export
+2. Click the **Export** button
+3. Choose your preferred format (CSV or JSON)
+4. Click **Export** to download the file
+
+### API Export
+
+<CodeGroup>
+```bash cURL
+curl -X POST "https://api.klyra.io/v1/audit-logs/export" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "start_time": "2023-06-01T00:00:00Z",
+    "end_time": "2023-06-30T23:59:59Z",
+    "event_types": ["moderation.created", "moderation.completed"],
+    "format": "json"
+  }'
+```
+
+```js JavaScript
+const exportJob = await klyra.auditLogs.export({
+  startTime: '2023-06-01T00:00:00Z',
+  endTime: '2023-06-30T23:59:59Z',
+  eventTypes: ['moderation.created', 'moderation.completed'],
+  format: 'json'
+});
+
+console.log('Export job started:', exportJob.id);
+
+// Poll for completion
+const checkExport = async (jobId) => {
+  const status = await klyra.auditLogs.exportStatus(jobId);
+  
+  if (status.state === 'completed') {
+    console.log('Export completed. Download URL:', status.download_url);
+  } else if (status.state === 'failed') {
+    console.error('Export failed:', status.error);
+  } else {
+    console.log('Export in progress...');
+    setTimeout(() => checkExport(jobId), 5000);
+  }
+};
+
+checkExport(exportJob.id);
+```
+</CodeGroup>
+
+## Log Retention
+
+Log retention periods vary by plan:
+
+| Plan | Retention Period | Export Capabilities |
+|------|------------------|---------------------|
+| Startup | 30 days | CSV, JSON (last 30 days) |
+| Business | 90 days | CSV, JSON (last 90 days) |
+| Enterprise | 1+ year | CSV, JSON, SIEM integration |
+
+## SIEM Integration
+
+Enterprise customers can integrate Klyra Audit Logs directly with their Security Information and Event Management (SIEM) systems:
+
+### Supported Integrations
+
+- **Splunk**: Direct integration via HTTP Event Collector
+- **Datadog**: Log forwarding via Datadog's API
+- **Sumo Logic**: Real-time log streaming
+- **AWS CloudWatch**: Log export to CloudWatch
+- **Azure Monitor**: Log export to Azure Monitor
+- **Google Cloud Logging**: Log export to Google Cloud Logging
+
+Contact [enterprise@klyra.io](mailto:enterprise@klyra.io) to set up SIEM integration for your organization.
+
+## Compliance
+
+Klyra Audit Logs are designed to help you meet compliance requirements:
+
+- **Immutable records**: Logs cannot be altered or deleted
+- **Tamper-evident**: Cryptographically signed to detect tampering
+- **Comprehensive**: All user and system actions are logged
+- **Detailed metadata**: Each log includes relevant context
+- **Access controls**: Logs can only be viewed by authorized users
+
+Our audit log system helps you comply with regulations such as SOC 2, GDPR, HIPAA, and CCPA. 

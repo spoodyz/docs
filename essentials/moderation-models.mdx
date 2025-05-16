@@ -1,0 +1,168 @@
+---
+title: 'Moderation Models'
+description: 'Understanding Klyra content moderation capabilities'
+---
+
+## Overview
+
+Klyra provides powerful AI-powered moderation models that can analyze and flag potentially harmful content across multiple modalities. Our models are continually trained on diverse datasets to ensure high accuracy and minimal bias.
+
+## Available Models
+
+<Tabs>
+  <Tab title="Text">
+    ### Text Moderation
+
+    Our text moderation model can analyze text content in over 50 languages for harmful or inappropriate content.
+
+    #### Supported Categories:
+    - **Toxic**: Hateful, aggressive, or insulting content
+    - **Harassment**: Bullying, threats, or intimidation
+    - **Self-harm**: Content promoting self-harm or suicide
+    - **Sexual**: Sexually explicit or adult content
+    - **Violence**: Graphic or violent descriptions
+    - **Hate speech**: Content targeting protected groups
+    - **Spam**: Unsolicited promotional content
+    - **Profanity**: Swear words and offensive language
+
+    #### Sample Request:
+    ```json
+    {
+      "content": "Your text content here",
+      "settings": {
+        "categories": ["toxic", "harassment", "hate_speech"],
+        "threshold": 0.7,
+        "language": "en"
+      }
+    }
+    ```
+  </Tab>
+  <Tab title="Images">
+    ### Image Moderation
+
+    Our image moderation model can detect inappropriate visual content in images.
+
+    #### Supported Categories:
+    - **Adult**: Nudity and sexually explicit content
+    - **Violence**: Graphic or violent imagery
+    - **Hate symbols**: Hate symbols and extremist content
+    - **Drugs**: Drug paraphernalia and substances
+    - **Weapons**: Firearms and weapons
+    - **Self-harm**: Content depicting self-harm
+    - **Gambling**: Gambling-related imagery
+
+    #### Sample Request:
+    ```json
+    {
+      "content": "https://example.com/image.jpg",
+      "settings": {
+        "categories": ["adult", "violence", "weapons"],
+        "threshold": 0.6,
+        "return_cropped_areas": true
+      }
+    }
+    ```
+    
+    Alternatively, you can upload base64-encoded image data directly:
+    
+    ```json
+    {
+      "content": {
+        "data": "base64EncodedImageData...",
+        "mime_type": "image/jpeg"
+      },
+      "settings": {
+        "categories": ["adult", "violence"]
+      }
+    }
+    ```
+  </Tab>
+  <Tab title="Audio">
+    ### Audio Moderation
+
+    Our audio moderation model transcribes and analyzes audio content for harmful speech.
+
+    #### Supported Categories:
+    - All text categories
+    - **Music copyright**: Detection of copyrighted music
+    - **Speaker identification**: Detection of specific speakers
+
+    #### Sample Request:
+    ```json
+    {
+      "content": "https://example.com/audio.mp3",
+      "settings": {
+        "categories": ["toxic", "hate_speech"],
+        "threshold": 0.6,
+        "language": "auto",
+        "timestamp_granularity": "second"
+      }
+    }
+    ```
+  </Tab>
+  <Tab title="Video">
+    ### Video Moderation
+
+    Our video moderation combines visual and audio analysis for comprehensive moderation.
+
+    #### Supported Categories:
+    - All image categories
+    - All audio categories
+    - **Scene detection**: Inappropriate scene detection
+
+    #### Sample Request:
+    ```json
+    {
+      "content": "https://example.com/video.mp4",
+      "settings": {
+        "categories": ["adult", "violence", "hate_speech"],
+        "threshold": 0.7,
+        "frame_rate": 1,
+        "return_timestamps": true
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Model Selection
+
+Klyra automatically selects the appropriate moderation model based on the content type you submit. You can also explicitly specify which model version to use:
+
+```json
+{
+  "content": "Your content here",
+  "settings": {
+    "model": "klyra-text-v2",
+    "categories": ["toxic", "harassment"]
+  }
+}
+```
+
+### Available Model Versions
+
+| Model Name | Content Type | Description |
+|------------|--------------|-------------|
+| klyra-text-v2 | Text | Latest text moderation model with improved multilingual support |
+| klyra-image-v3 | Image | High-precision image moderation with 98.7% accuracy |
+| klyra-audio-v1 | Audio | Audio transcription and moderation |
+| klyra-video-v1 | Video | Frame-by-frame video analysis |
+
+## Confidence Scores
+
+All moderation results include confidence scores between 0.0 and 1.0 for each category:
+- 0.0: No detection of the category
+- 1.0: Highest confidence that the content belongs to the category
+
+You can set a custom threshold for flagging content in the request settings. The default threshold is 0.7 for most categories.
+
+## Model Ethics & Bias Prevention
+
+Klyra is committed to providing fair and unbiased moderation systems. Our models are:
+
+- Trained on diverse, representative datasets
+- Regularly audited for demographic biases
+- Continuously refined based on customer feedback
+- Transparent in confidence scoring and decision making
+
+Read more about our [ethics principles](/essentials/ethics) and [bias prevention practices](/essentials/bias-prevention). 

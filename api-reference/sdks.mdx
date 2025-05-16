@@ -1,0 +1,269 @@
+---
+title: 'SDKs'
+description: 'Integrate Klyra into your application with our client libraries'
+---
+
+## Overview
+
+Klyra provides official client libraries for popular programming languages to make integration as seamless as possible. These SDKs handle authentication, request formatting, error handling, and more, allowing you to focus on building your application.
+
+## Available SDKs
+
+<CardGroup cols={2}>
+  <Card 
+    title="JavaScript/TypeScript" 
+    icon="js" 
+    href="https://github.com/klyra/klyra-js"
+  >
+    For Node.js, browser applications, and TypeScript projects
+  </Card>
+  <Card 
+    title="Python" 
+    icon="python" 
+    href="https://github.com/klyra/klyra-python"
+  >
+    For Python 3.7+ applications
+  </Card>
+  <Card 
+    title="Go" 
+    icon="golang" 
+    href="https://github.com/klyra/klyra-go"
+  >
+    For Go 1.18+ applications
+  </Card>
+  <Card 
+    title="Ruby" 
+    icon="gem" 
+    href="https://github.com/klyra/klyra-ruby"
+  >
+    For Ruby 2.7+ applications
+  </Card>
+  <Card 
+    title="PHP" 
+    icon="php" 
+    href="https://github.com/klyra/klyra-php"
+  >
+    For PHP 8.0+ applications
+  </Card>
+  <Card 
+    title="Java" 
+    icon="java" 
+    href="https://github.com/klyra/klyra-java"
+  >
+    For Java 11+ applications
+  </Card>
+  <Card 
+    title=".NET" 
+    icon="microsoft" 
+    href="https://github.com/klyra/klyra-dotnet"
+  >
+    For .NET 6.0+ applications
+  </Card>
+  <Card 
+    title="Rust" 
+    icon="rust" 
+    href="https://github.com/klyra/klyra-rust"
+  >
+    For Rust applications
+  </Card>
+</CardGroup>
+
+## JavaScript SDK
+
+The JavaScript SDK works in both Node.js and browser environments.
+
+### Installation
+
+<CodeGroup>
+  ```bash npm
+  npm install @klyra/sdk
+  ```
+
+  ```bash yarn
+  yarn add @klyra/sdk
+  ```
+
+  ```bash pnpm
+  pnpm add @klyra/sdk
+  ```
+</CodeGroup>
+
+### Basic Usage
+
+```javascript
+import { KlyraClient } from '@klyra/sdk';
+
+// Initialize the client with your API key
+const klyra = new KlyraClient('YOUR_API_KEY');
+
+async function moderateText() {
+  try {
+    const result = await klyra.moderateText({
+      content: "This is a text to moderate",
+      settings: {
+        categories: ["toxic", "harassment", "hate_speech"],
+        threshold: 0.7
+      }
+    });
+    
+    console.log('Moderation result:', result);
+    
+    if (result.flagged) {
+      console.log('Content was flagged');
+    } else {
+      console.log('Content is safe');
+    }
+  } catch (error) {
+    console.error('Error moderating content:', error);
+  }
+}
+
+moderateText();
+```
+
+## Python SDK
+
+### Installation
+
+```bash
+pip install klyra
+```
+
+### Basic Usage
+
+```python
+from klyra import KlyraClient
+
+# Initialize the client with your API key
+client = KlyraClient("YOUR_API_KEY")
+
+try:
+    # Moderate text content
+    result = client.moderate_text(
+        content="This is a text to moderate",
+        settings={
+            "categories": ["toxic", "harassment", "hate_speech"],
+            "threshold": 0.7
+        }
+    )
+    
+    print("Moderation result:", result)
+    
+    if result.flagged:
+        print("Content was flagged")
+    else:
+        print("Content is safe")
+        
+except Exception as e:
+    print("Error moderating content:", e)
+```
+
+## Go SDK
+
+### Installation
+
+```bash
+go get github.com/klyra/klyra-go
+```
+
+### Basic Usage
+
+```go
+package main
+
+import (
+	"fmt"
+	"github.com/klyra/klyra-go"
+)
+
+func main() {
+	// Initialize the client with your API key
+	client := klyra.NewClient("YOUR_API_KEY")
+	
+	// Create moderation request
+	request := klyra.TextModerationRequest{
+		Content: "This is a text to moderate",
+		Settings: klyra.ModerationSettings{
+			Categories: []string{"toxic", "harassment", "hate_speech"},
+			Threshold: 0.7,
+		},
+	}
+	
+	// Send moderation request
+	result, err := client.ModerateText(request)
+	if err != nil {
+		fmt.Printf("Error moderating content: %v\n", err)
+		return
+	}
+	
+	fmt.Printf("Moderation result: %+v\n", result)
+	
+	if result.Flagged {
+		fmt.Println("Content was flagged")
+	} else {
+		fmt.Println("Content is safe")
+	}
+}
+```
+
+## SDK Features
+
+All Klyra SDKs provide these core features:
+
+- **Authentication**: Handles API key authentication automatically
+- **Error handling**: Provides clear error messages and proper error types
+- **Retries**: Implements exponential backoff for rate limiting
+- **Logging**: Configurable logging for API requests and responses
+- **Type safety**: Strong typing for request and response objects
+- **Promise/async support**: Modern async patterns for JavaScript and other languages
+- **Streaming API support**: Efficient handling of large files and batch operations
+- **Detailed documentation**: Comprehensive documentation with examples
+
+## Advanced Configuration
+
+All SDKs support advanced configuration options:
+
+```javascript
+const klyra = new KlyraClient({
+  apiKey: 'YOUR_API_KEY',
+  baseURL: 'https://api.klyra.io/v1', // Override API base URL
+  timeout: 30000, // Request timeout in milliseconds
+  maxRetries: 3, // Maximum number of retry attempts
+  idempotencyKey: 'unique-request-id', // Custom idempotency key
+  trustless: {
+    enabled: false // Enable/disable trustless mode
+  },
+  headers: {
+    'Custom-Header': 'value' // Custom headers to include with requests
+  },
+  logger: {
+    level: 'info' // Logging level (debug, info, warn, error)
+  }
+});
+```
+
+## SDK Versioning
+
+Our SDKs follow semantic versioning (SemVer). We maintain compatibility within major versions, so you can safely update to the latest minor or patch release without breaking changes.
+
+## Feature Parity
+
+All official SDKs have feature parity, meaning they support the same capabilities across languages. New API features are added to all SDKs simultaneously.
+
+## Support
+
+If you encounter any issues with our SDKs:
+
+1. Check the [GitHub Issues](https://github.com/klyra/klyra-js/issues) for your SDK
+2. Review our [SDK troubleshooting guide](https://klyra.io/docs/sdk-troubleshooting)
+3. Contact [support@klyra.io](mailto:support@klyra.io) for additional help
+
+## Community SDKs
+
+In addition to our official SDKs, the community has developed integrations for other languages:
+
+- [Swift SDK](https://github.com/community/klyra-swift)
+- [Dart/Flutter SDK](https://github.com/community/klyra-dart)
+- [Kotlin SDK](https://github.com/community/klyra-kotlin)
+
+These SDKs are built and maintained by the community. While they may provide the functionality you need, they are not officially supported by Klyra. 
